@@ -1,0 +1,12 @@
+[package]
+name = "bare_runtime"
+version = "0.1.0"
+authors = ["Jethro Beekman <jethro@fortanix.com>"]
+build = "build.rs"
+
+[dependencies]
+rlibc = "*"
+alloc_buddy_simple = { version = "*", features = ["use-as-rust-allocator"] }
+
+[build-dependencies]
+gcc = "*"
