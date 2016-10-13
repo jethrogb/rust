@@ -5,7 +5,7 @@
 	"has-rpath": true,
 	"pre-link-args": ["-Wl,--as-needed","-Wl,-z,noexecstack","-m64"],
 	"position-independent-executables": true,
-	"exe-allocation-crate": "alloc_system",
+	"exe-allocation-crate": "must_supply_allocator",
 	"has-elf-tls": false,
 	"cpu": "x86-64",
 	"max-atomic-width": 64,
