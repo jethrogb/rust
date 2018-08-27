@@ -9,15 +9,11 @@
 // except according to those terms.
 
 use fmt;
-use io::prelude::*;
-use sys::stdio::{Stderr, stderr_prints_nothing};
+use sys::stdio::panic_output;
 use thread;
 
 pub fn dumb_print(args: fmt::Arguments) {
-    if stderr_prints_nothing() {
-        return
-    }
-    let _ = Stderr::new().map(|mut stderr| stderr.write_fmt(args));
+    panic_output().map(|w| w.write(|out| out.write_fmt(args)));
 }
 
 // Other platforms should use the appropriate platform-specific mechanism for

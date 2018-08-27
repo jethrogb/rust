@@ -20,6 +20,7 @@ use sync::Mutex;
 use sys::c;
 use sys::cvt;
 use sys::handle::Handle;
+use panicking::PanicOutput;
 
 pub enum Output {
     Console(c::HANDLE),
@@ -228,6 +229,6 @@ pub fn is_ebadf(err: &io::Error) -> bool {
 // been seen to be acceptable.
 pub const STDIN_BUF_SIZE: usize = 8 * 1024;
 
-pub fn stderr_prints_nothing() -> bool {
-    false
+pub fn panic_output() -> Option<PanicOutput> {
+    Some(PanicOutput::StdErr)
 }
