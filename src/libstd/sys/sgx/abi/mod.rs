@@ -17,6 +17,8 @@ mod mem;
 pub(super) mod panic;
 
 // library features
+pub mod thread;
+pub mod tls;
 #[macro_use]
 mod usercalls;
 
@@ -63,6 +65,10 @@ pub unsafe extern "C" fn tcs_init(secondary: bool) {
 #[no_mangle]
 #[allow(unreachable_code)]
 pub extern "C" fn entry(p1: u64, p2: u64, p3: u64, secondary: bool, p4: u64, p5: u64) -> (u64, u64) {
+    // FIXME: how to support TLS in library mode?
+    let tls = Box::new(tls::Tls::new());
+    let _tls_guard = unsafe { tls.activate() };
+
     if secondary {
         unimplemented!("thread entrypoint");
 
