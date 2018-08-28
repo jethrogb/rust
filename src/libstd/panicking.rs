@@ -37,14 +37,16 @@ use thread;
 
 #[derive(Clone, Copy)]
 #[allow(dead_code)]
-pub enum PanicOutput {
+pub enum PanicOutput<W: Write = ::io::Sink> {
     StdErr,
+    Custom(fn() -> Option<W>)
 }
 
-impl PanicOutput {
+impl<W: Write> PanicOutput<W> {
     pub(crate) fn write<T, F: FnOnce(&mut Write) -> T>(self, write: F) {
         match self {
             PanicOutput::StdErr => Stderr::new().ok().map(|mut w| write(&mut w)),
+            PanicOutput::Custom(f) => f().map(|mut w| write(&mut w)),
         };
     }
 }

@@ -310,6 +310,7 @@
 #![feature(panic_info_message)]
 #![feature(non_exhaustive)]
 #![feature(alloc_layout_extra)]
+#![cfg_attr(target_env = "sgx", feature(global_asm, range_contains))]
 
 #![default_lib_allocator]
 
@@ -351,6 +352,11 @@ extern crate unwind;
 // _not_ the globals used by "real" std. So this import, defined only during
 // testing gives test-std access to real-std lang items and globals. See #2912
 #[cfg(test)] extern crate std as realstd;
+
+#[cfg(target_env = "sgx")]
+#[macro_use]
+#[allow(unused_imports)] // FIXME: without `#[macro_use]`, get error: “cannot determine resolution for the macro `usercalls_asm`”
+extern crate fortanix_sgx_abi;
 
 // The standard macros that are not built-in to the compiler.
 #[macro_use]
@@ -482,6 +488,12 @@ pub mod future;
 #[macro_use]
 mod sys_common;
 mod sys;
+
+#[unstable(feature = "perma_unstable", issue = "0")]
+#[cfg(target_env = "sgx")]
+#[doc(hidden)]
+// see comment at definition site for why this is necessary
+pub use sys::abi::asm_exports;
 
 pub mod alloc;
 
