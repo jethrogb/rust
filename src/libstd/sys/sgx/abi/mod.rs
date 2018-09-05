@@ -100,7 +100,7 @@ pub(super) fn exit_with_code(code: isize) -> ! {
             let _ = write!(out, "Exited with status code {}", code);
         }
     }
-    unsafe { usercalls::raw::exit(code != 0) };
+    usercalls::exit(code != 0);
 }
 
 #[unstable(feature = "perma_unstable", issue = "0")]
