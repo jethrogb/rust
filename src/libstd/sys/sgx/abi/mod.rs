@@ -20,7 +20,7 @@ pub(super) mod panic;
 pub mod thread;
 pub mod tls;
 #[macro_use]
-mod usercalls;
+pub mod usercalls;
 
 global_asm!(concat!(usercalls_asm!(), include_str!("entry.S")));
 
@@ -70,7 +70,7 @@ pub extern "C" fn entry(p1: u64, p2: u64, p3: u64, secondary: bool, p4: u64, p5:
     let _tls_guard = unsafe { tls.activate() };
 
     if secondary {
-        unimplemented!("thread entrypoint");
+        super::thread::Thread::entry();
 
         (0, 0)
     } else {
