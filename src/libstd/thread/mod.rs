@@ -167,10 +167,12 @@
 #![stable(feature = "rust1", since = "1.0.0")]
 
 use any::Any;
+use boxed::FnBox;
 use cell::UnsafeCell;
 use ffi::{CStr, CString};
 use fmt;
 use io;
+use mem;
 use panic;
 use panicking;
 use str;
@@ -482,7 +484,7 @@ impl Builder {
         };
 
         Ok(JoinHandle(JoinInner {
-            native: Some(imp::Thread::new(stack_size, Box::new(main))?),
+            native: Some(imp::Thread::new(stack_size, mem::transmute::<Box<FnBox()>, Box<FnBox()>>( Box::new(main) ))?),
             thread: my_thread,
             packet: Packet(my_packet),
         }))
