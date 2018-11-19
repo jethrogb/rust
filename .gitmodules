@@ -7,7 +7,7 @@
 	url = https://github.com/rust-lang/rust-installer.git
 [submodule "src/liblibc"]
 	path = src/liblibc
-	url = https://github.com/rust-lang/libc.git
+	url = https://github.com/jethrogb/rust-libc.git
 [submodule "src/doc/nomicon"]
 	path = src/doc/nomicon
 	url = https://github.com/rust-lang-nursery/nomicon.git
@@ -37,7 +37,7 @@
 	url = https://github.com/solson/miri.git
 [submodule "src/dlmalloc"]
 	path = src/dlmalloc
-	url = https://github.com/alexcrichton/dlmalloc-rs.git
+	url = https://github.com/jethrogb/dlmalloc-rs.git
 [submodule "src/doc/rust-by-example"]
 	path = src/doc/rust-by-example
 	url = https://github.com/rust-lang/rust-by-example.git
@@ -46,7 +46,7 @@
 	url = https://github.com/rust-lang/llvm.git
 [submodule "src/stdsimd"]
 	path = src/stdsimd
-	url = https://github.com/rust-lang-nursery/stdsimd.git
+	url = https://github.com/jethrogb/stdsimd.git
 [submodule "src/tools/lld"]
 	path = src/tools/lld
 	url = https://github.com/rust-lang/lld.git
@@ -62,3 +62,6 @@
 	url = https://github.com/rust-lang-nursery/clang.git
 	branch = rust-release-80-v1
 
+[submodule "src/rustc/fortanix-sgx-abi_shim/rust-sgx"]
+	path = src/rustc/fortanix-sgx-abi_shim/rust-sgx
+	url = https://github.com/fortanix/rust-sgx
