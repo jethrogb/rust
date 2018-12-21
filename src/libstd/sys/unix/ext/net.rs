@@ -26,6 +26,7 @@ mod libc {
 }
 
 use ascii;
+use convert::{TryFrom, TryInto};
 use ffi::OsStr;
 use fmt;
 use io::{self, Initializer};
@@ -85,6 +86,15 @@ unsafe fn sockaddr_un(path: &Path) -> io::Result<(libc::sockaddr_un, libc::sockl
         Some(_) => len += 1,
     }
     Ok((addr, len as libc::socklen_t))
+}
+
+impl<P: AsRef<Path>> TryFrom<P> for SocketAddr {
+    type Error = io::Error;
+
+    fn try_from(path: P) -> io::Result<SocketAddr> {
+        let (addr, len) = sockaddr_un(path.as_ref())?;
+        SocketAddr::from_parts(addr, len)
+    }
 }
 
 enum AddressKind<'a> {
@@ -299,17 +309,15 @@ impl UnixStream {
     /// };
     /// ```
     #[stable(feature = "unix_socket", since = "1.10.0")]
-    pub fn connect<P: AsRef<Path>>(path: P) -> io::Result<UnixStream> {
-        fn inner(path: &Path) -> io::Result<UnixStream> {
+    pub fn connect<S: TryInto<SocketAddr, Error=io::Error>>(socket: S) -> io::Result<UnixStream> {
+        fn inner(SocketAddr { addr, len }: SocketAddr) -> io::Result<UnixStream> {
             unsafe {
                 let inner = Socket::new_raw(libc::AF_UNIX, libc::SOCK_STREAM)?;
-                let (addr, len) = sockaddr_un(path)?;
-
                 cvt(libc::connect(*inner.as_inner(), &addr as *const _ as *const _, len))?;
                 Ok(UnixStream(inner))
             }
         }
-        inner(path.as_ref())
+        inner(socket.try_into()?)
     }
 
     /// Creates an unnamed pair of connected sockets.
