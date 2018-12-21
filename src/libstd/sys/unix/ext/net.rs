@@ -80,14 +80,35 @@ unsafe fn sockaddr_un(path: &Path) -> io::Result<(libc::sockaddr_un, libc::sockl
     // struct
 
     let mut len = sun_path_offset() + bytes.len();
-    match bytes.get(0) {
-        Some(&0) | None => {}
-        Some(_) => len += 1,
+    // FIXME: is this branch necessary? do/should we allow creating unnamed
+    // addresses this way?
+    if bytes.len() > 0 {
+        len += 1 // terminating null
     }
     Ok((addr, len as libc::socklen_t))
 }
 
-enum AddressKind<'a> {
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub(crate) unsafe fn sockaddr_un_abstract(src_addr: &OsStr) -> io::Result<(libc::sockaddr_un, libc::socklen_t)> {
+    let mut dst_addr: libc::sockaddr_un = mem::zeroed();
+    dst_addr.sun_family = libc::AF_UNIX as libc::sa_family_t;
+
+    let dst_bytes = &mut dst_addr.sun_path[1..]; // abstract paths start with a null byte
+    let src_bytes = src_addr.as_bytes();
+
+    if src_bytes.len() > dst_bytes.len() {
+        return Err(io::Error::new(io::ErrorKind::InvalidInput,
+                                  "address must be shorter than SUN_LEN-1"));
+    }
+    for (dst, src) in dst_bytes.iter_mut().zip(src_bytes.iter()) {
+        *dst = *src as libc::c_char;
+    }
+
+    let len = sun_path_offset() + src_bytes.len() + 1;
+    Ok((dst_addr, len as libc::socklen_t))
+}
+
+pub(crate) enum AddressKind<'a> {
     Unnamed,
     Pathname(&'a Path),
     Abstract(&'a [u8]),
@@ -128,7 +149,7 @@ impl SocketAddr {
         }
     }
 
-    fn from_parts(addr: libc::sockaddr_un, mut len: libc::socklen_t) -> io::Result<SocketAddr> {
+    pub(crate) fn from_parts(addr: libc::sockaddr_un, mut len: libc::socklen_t) -> io::Result<SocketAddr> {
         if len == 0 {
             // When there is a datagram from unnamed unix socket
             // linux returns zero bytes of address
@@ -176,7 +197,7 @@ impl SocketAddr {
         }
     }
 
-    /// Returns the contents of this address if it is a `pathname` address.
+    /// Returns the contents of this address if it is a pathname address.
     ///
     /// # Examples
     ///
@@ -209,7 +230,7 @@ impl SocketAddr {
         }
     }
 
-    fn address<'a>(&'a self) -> AddressKind<'a> {
+    pub(crate) fn address<'a>(&'a self) -> AddressKind<'a> {
         let len = self.len as usize - sun_path_offset();
         let path = unsafe { mem::transmute::<&[libc::c_char], &[u8]>(&self.addr.sun_path) };
 

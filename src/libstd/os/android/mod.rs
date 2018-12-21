@@ -14,3 +14,5 @@
 
 pub mod raw;
 pub mod fs;
+#[path = "../linux/net.rs"]
+pub mod net;
