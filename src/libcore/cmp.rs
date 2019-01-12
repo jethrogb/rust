@@ -91,6 +91,7 @@ use self::Ordering::*;
 /// For example, let's tweak our previous code a bit:
 ///
 /// ```
+/// // The derive implements <BookFormat> == <BookFormat> comparisons
 /// #[derive(PartialEq)]
 /// enum BookFormat {
 ///     Paperback,
