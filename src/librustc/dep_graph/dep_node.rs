@@ -586,6 +586,7 @@ define_dep_nodes!( <'tcx>
     [] CheckImplItemWellFormed(DefId),
     [] ReachableNonGenerics(CrateNum),
     [] NativeLibraries(CrateNum),
+    [] EntryFn(CrateNum),
     [] PluginRegistrarFn(CrateNum),
     [] ProcMacroDeclsStatic(CrateNum),
     [input] CrateDisambiguator(CrateNum),
