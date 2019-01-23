@@ -119,8 +119,6 @@ macro_rules! from_str_float_impl {
             ///
             /// # Grammar
             ///
-            /// [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
-            ///
             /// All strings that adhere to the following [EBNF] grammar
             /// will result in an [`Ok`] being returned:
             ///
@@ -133,6 +131,8 @@ macro_rules! from_str_float_impl {
             /// Sign   ::= [+-]
             /// Digit  ::= [0-9]
             /// ```
+            ///
+            /// [EBNF]: https://www.w3.org/TR/REC-xml/#sec-notation
             ///
             /// # Known bugs
             ///
