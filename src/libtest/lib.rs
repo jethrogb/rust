@@ -274,6 +274,10 @@ impl Options {
 // The default console test runner. It accepts the command line
 // arguments and a vector of test_descs.
 pub fn test_main(args: &[String], tests: Vec<TestDescAndFn>, options: Options) {
+    if cfg!(target_env = "sgx") {
+        env::set_var("RUST_BACKTRACE", "1");
+    }
+
     let mut opts = match parse_opts(args) {
         Some(Ok(o)) => o,
         Some(Err(msg)) => {

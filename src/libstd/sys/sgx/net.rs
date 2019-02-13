@@ -41,10 +41,27 @@ impl FromInner<FileDesc> for Socket {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TcpStream {
     inner: Socket,
     peer_addr: Option<String>,
+}
+
+impl fmt::Debug for TcpStream {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut res = f.debug_struct("TcpStream");
+
+        if let Some(ref addr) = self.inner.local_addr {
+            res.field("addr", addr);
+        }
+
+        if let Some(ref peer) = self.peer_addr {
+            res.field("peer", peer);
+        }
+
+        res.field("fd", &self.inner.inner.as_inner())
+            .finish()
+    }
 }
 
 fn io_err_to_addr(result: io::Result<&SocketAddr>) -> io::Result<String> {
@@ -166,9 +183,22 @@ impl FromInner<(Socket, Option<String>)> for TcpStream {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TcpListener {
     inner: Socket,
+}
+
+impl fmt::Debug for TcpListener {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut res = f.debug_struct("TcpListener");
+
+        if let Some(ref addr) = self.inner.local_addr {
+            res.field("addr", addr);
+        }
+
+        res.field("fd", &self.inner.inner.as_inner())
+            .finish()
+    }
 }
 
 impl TcpListener {

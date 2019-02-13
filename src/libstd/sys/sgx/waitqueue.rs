@@ -530,7 +530,8 @@ mod tests {
         let locked = wq.lock();
 
         let t1 = thread::spawn(move || {
-            assert!(WaitQueue::notify_one(wq2.lock()).is_none())
+            // if we obtain the lock, the main thread should be waiting
+            assert!(WaitQueue::notify_one(wq2.lock()).is_ok());
         });
 
         WaitQueue::wait(locked);

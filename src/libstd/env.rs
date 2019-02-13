@@ -989,6 +989,7 @@ mod tests {
     fn test() {
         assert!((!Path::new("test-path").is_absolute()));
 
+        #[cfg(not(target_env = "sgx"))]
         current_dir().unwrap();
     }
 

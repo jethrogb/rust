@@ -656,7 +656,16 @@ mod tests {
         assert_almost_eq!(a.checked_sub(second).unwrap().checked_add(second).unwrap(), a);
 
         // A difference of 80 and 800 years cannot fit inside a 32-bit time_t
-        if !(cfg!(unix) && ::mem::size_of::<::libc::time_t>() <= 4) {
+        #[cfg(unix)]
+        fn has_32bit_time() -> bool {
+            ::mem::size_of::<::libc::time_t>() <= 4
+        }
+        #[cfg(not(unix))]
+        fn has_32bit_time() -> bool {
+            false
+        }
+
+        if !has_32bit_time() {
             let eighty_years = second * 60 * 60 * 24 * 365 * 80;
             assert_almost_eq!(a - eighty_years + eighty_years, a);
             assert_almost_eq!(a - (eighty_years * 10) + (eighty_years * 10), a);
