@@ -16,7 +16,22 @@ impl PreDefineMethods<'tcx> for CodegenCx<'ll, 'tcx> {
                                   def_id: DefId,
                                   linkage: Linkage,
                                   visibility: Visibility,
-                                  symbol_name: &str) {
+                                  mut symbol_name: &str) {
+        let is_std = self.tcx.crate_name(def_id.krate).with(|s| s == "std" );
+        if is_std && symbol_name == "__rust_global_alloc" {
+            let any_dynamic_crate = self.tcx.sess.dependency_formats.borrow()
+                .iter()
+                .any(|(_, list)| {
+                    use rustc::middle::dependency_format::Linkage;
+                    list.iter().any(|&linkage| linkage == Linkage::Dynamic)
+                });
+            match (any_dynamic_crate, *self.tcx.sess.allocator_kind.get()) {
+                (false, Some(syntax::ext::allocator::AllocatorKind::Global)) =>
+                    symbol_name = "__rdl_global_alloc",
+                _ => {},
+            }
+        }
+
         let instance = Instance::mono(self.tcx, def_id);
         let ty = instance.ty(self.tcx);
         let llty = self.layout_of(ty).llvm_type(self);

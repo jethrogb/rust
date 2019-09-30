@@ -14,7 +14,7 @@ use rustc::ty::query::Providers;
 use rustc::ty::subst::SubstsRef;
 use rustc::util::nodemap::{FxHashMap, DefIdMap};
 use rustc_data_structures::indexed_vec::IndexVec;
-use syntax::ext::allocator::ALLOCATOR_METHODS;
+//use syntax::ext::allocator::ALLOCATOR_METHODS;
 
 pub type ExportedSymbols = FxHashMap<
     CrateNum,
@@ -195,12 +195,9 @@ fn exported_symbols_provider_local(
     }
 
     if tcx.sess.allocator_kind.get().is_some() {
-        for method in ALLOCATOR_METHODS {
-            let symbol_name = format!("__rust_{}", method.name);
-            let exported_symbol = ExportedSymbol::NoDefId(SymbolName::new(&symbol_name));
+        let exported_symbol = ExportedSymbol::NoDefId(SymbolName::new(&"__rust_global_alloc"));
 
-            symbols.push((exported_symbol, SymbolExportLevel::Rust));
-        }
+        symbols.push((exported_symbol, SymbolExportLevel::Rust));
     }
 
     if tcx.sess.opts.cg.profile_generate.enabled() {

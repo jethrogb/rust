@@ -13,6 +13,7 @@ pub use core::alloc::*;
 #[cfg(test)]
 mod tests;
 
+#[cfg(bootstrap)]
 extern "Rust" {
     // These are the magic symbols to call the global allocator.  rustc generates
     // them from the `#[global_allocator]` attribute if there is one, or uses the
@@ -30,6 +31,11 @@ extern "Rust" {
                       new_size: usize) -> *mut u8;
     #[rustc_allocator_nounwind]
     fn __rust_alloc_zeroed(size: usize, align: usize) -> *mut u8;
+}
+#[cfg(not(bootstrap))]
+extern_existential::extern_existential! {
+    #[allow(non_camel_case_types)]
+    extern existential type __rust_global_alloc: GlobalAlloc;
 }
 
 /// The global memory allocator.
@@ -81,7 +87,12 @@ pub struct Global;
 #[stable(feature = "global_alloc", since = "1.28.0")]
 #[inline]
 pub unsafe fn alloc(layout: Layout) -> *mut u8 {
-    __rust_alloc(layout.size(), layout.align())
+    #[cfg(bootstrap)] {
+        __rust_alloc(layout.size(), layout.align())
+    }
+    #[cfg(not(bootstrap))] {
+        __rust_global_alloc.alloc(layout)
+    }
 }
 
 /// Deallocate memory with the global allocator.
@@ -103,7 +114,12 @@ pub unsafe fn alloc(layout: Layout) -> *mut u8 {
 #[stable(feature = "global_alloc", since = "1.28.0")]
 #[inline]
 pub unsafe fn dealloc(ptr: *mut u8, layout: Layout) {
-    __rust_dealloc(ptr, layout.size(), layout.align())
+    #[cfg(bootstrap)] {
+        __rust_dealloc(ptr, layout.size(), layout.align())
+    }
+    #[cfg(not(bootstrap))] {
+        __rust_global_alloc.dealloc(ptr, layout)
+    }
 }
 
 /// Reallocate memory with the global allocator.
@@ -125,7 +141,12 @@ pub unsafe fn dealloc(ptr: *mut u8, layout: Layout) {
 #[stable(feature = "global_alloc", since = "1.28.0")]
 #[inline]
 pub unsafe fn realloc(ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-    __rust_realloc(ptr, layout.size(), layout.align(), new_size)
+    #[cfg(bootstrap)] {
+        __rust_realloc(ptr, layout.size(), layout.align(), new_size)
+    }
+    #[cfg(not(bootstrap))] {
+        __rust_global_alloc.realloc(ptr, layout, new_size)
+    }
 }
 
 /// Allocate zero-initialized memory with the global allocator.
@@ -162,7 +183,12 @@ pub unsafe fn realloc(ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 
 #[stable(feature = "global_alloc", since = "1.28.0")]
 #[inline]
 pub unsafe fn alloc_zeroed(layout: Layout) -> *mut u8 {
-    __rust_alloc_zeroed(layout.size(), layout.align())
+    #[cfg(bootstrap)] {
+        __rust_alloc_zeroed(layout.size(), layout.align())
+    }
+    #[cfg(not(bootstrap))] {
+        __rust_global_alloc.alloc_zeroed(layout)
+    }
 }
 
 #[unstable(feature = "allocator_api", issue = "32838")]

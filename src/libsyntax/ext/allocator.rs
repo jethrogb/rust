@@ -57,6 +57,10 @@ pub static ALLOCATOR_METHODS: &[AllocatorMethod] = &[
 ];
 
 pub fn global_allocator_spans(krate: &ast::Crate) -> Vec<Span> {
+    if attr::contains_name(&krate.attrs, sym::default_lib_allocator) {
+        return vec![];
+    }
+
     struct Finder { name: Symbol, spans: Vec<Span> }
     impl<'ast> visit::Visitor<'ast> for Finder {
         fn visit_item(&mut self, item: &'ast ast::Item) {
@@ -68,7 +72,7 @@ pub fn global_allocator_spans(krate: &ast::Crate) -> Vec<Span> {
         }
     }
 
-    let name = Symbol::intern(&AllocatorKind::Global.fn_name("alloc"));
+    let name = Symbol::intern("__rust_global_alloc");
     let mut f = Finder { name, spans: Vec::new() };
     visit::walk_crate(&mut f, krate);
     f.spans

@@ -21,6 +21,7 @@ version = "0.0.0"
 dependencies = [
  "compiler_builtins",
  "core",
+ "extern-existential",
  "rand 0.7.0",
  "rand_xorshift 0.2.0",
 ]
@@ -954,6 +955,16 @@ version = "0.0.0"
 dependencies = [
  "rustdoc",
  "walkdir",
+]
+
+[[package]]
+name = "extern-existential"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f3907dad75d02c7e151fdbfdb693fd1aeb4a5cc0e7478a186663631bb8aa6a3"
+dependencies = [
+ "compiler_builtins",
+ "rustc-std-workspace-core",
 ]
 
 [[package]]
@@ -4050,6 +4061,7 @@ dependencies = [
  "compiler_builtins",
  "core",
  "dlmalloc",
+ "extern-existential",
  "fortanix-sgx-abi",
  "hashbrown",
  "libc",

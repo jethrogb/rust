@@ -222,7 +222,9 @@ pub fn rust_oom(layout: Layout) -> ! {
 #[allow(unused_attributes)]
 #[unstable(feature = "alloc_internals", issue = "0")]
 pub mod __default_lib_allocator {
-    use super::{System, Layout, GlobalAlloc};
+    #[cfg(bootstrap)]
+    use super::Layout;
+    use super::{System, GlobalAlloc};
     // These magic symbol names are used as a fallback for implementing the
     // `__rust_alloc` etc symbols (see `src/liballoc/alloc.rs) when there is
     // no `#[global_allocator]` attribute.
@@ -233,12 +235,14 @@ pub mod __default_lib_allocator {
     // linkage directives are provided as part of the current compiler allocator
     // ABI
 
+    #[cfg(bootstrap)]
     #[rustc_std_internal_symbol]
     pub unsafe extern fn __rdl_alloc(size: usize, align: usize) -> *mut u8 {
         let layout = Layout::from_size_align_unchecked(size, align);
         System.alloc(layout)
     }
 
+    #[cfg(bootstrap)]
     #[rustc_std_internal_symbol]
     pub unsafe extern fn __rdl_dealloc(ptr: *mut u8,
                                        size: usize,
@@ -246,6 +250,7 @@ pub mod __default_lib_allocator {
         System.dealloc(ptr, Layout::from_size_align_unchecked(size, align))
     }
 
+    #[cfg(bootstrap)]
     #[rustc_std_internal_symbol]
     pub unsafe extern fn __rdl_realloc(ptr: *mut u8,
                                        old_size: usize,
@@ -255,9 +260,16 @@ pub mod __default_lib_allocator {
         System.realloc(ptr, old_layout, new_size)
     }
 
+    #[cfg(bootstrap)]
     #[rustc_std_internal_symbol]
     pub unsafe extern fn __rdl_alloc_zeroed(size: usize, align: usize) -> *mut u8 {
         let layout = Layout::from_size_align_unchecked(size, align);
         System.alloc_zeroed(layout)
+    }
+
+    #[cfg(not(bootstrap))]
+    extern_existential::extern_existential! {
+        #[rustc_std_internal_symbol]
+        extern existential type __rust_global_alloc: GlobalAlloc = System;
     }
 }

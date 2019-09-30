@@ -95,6 +95,7 @@ const WHITELIST: &[Crate<'_>] = &[
     Crate("either"),
     Crate("ena"),
     Crate("env_logger"),
+    Crate("extern-existential"),
     Crate("filetime"),
     Crate("flate2"),
     Crate("fortanix-sgx-abi"),
