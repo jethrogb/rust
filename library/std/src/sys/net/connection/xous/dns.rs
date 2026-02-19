@@ -59,7 +59,8 @@ impl Iterator for LookupHost {
     }
 }
 
-pub fn lookup_host(query: &str, port: u16) -> io::Result<LookupHost> {
+pub fn lookup_host(lh: crate::net::socket_addr::LookupHost<'_>) -> io::Result<LookupHost> {
+    let (query, port) = lh.split()?;
     let mut result = LookupHost { data: LookupHostQuery([0u8; 4096]), offset: 0, count: 0, port };
 
     // Copy the query into the message that gets sent to the DNS server

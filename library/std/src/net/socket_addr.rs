@@ -189,8 +189,32 @@ impl ToSocketAddrs for (Ipv6Addr, u16) {
     }
 }
 
-fn lookup_host(host: &str, port: u16) -> io::Result<vec::IntoIter<SocketAddr>> {
-    let addrs = crate::sys::net::lookup_host(host, port)?;
+pub(super) struct LookupHost<'a> {
+    pub(super) host: &'a str,
+    pub(super) port: Option<u16>,
+}
+
+impl<'a> LookupHost {
+    pub(super) fn split(&self) -> io::Result<(&'a str, u16)> {
+        match self.port {
+            Some(port) => {
+                Ok((self.host, port))
+            }
+            None => {
+                let Some((host, port_str)) = self.rsplit_once(':') else {
+                    return Err(io::const_error!(io::ErrorKind::InvalidInput, "invalid socket address"));
+                };
+                let Ok(port) = port_str.parse::<u16>() else {
+                    return Err(io::const_error!(io::ErrorKind::InvalidInput, "invalid port value"));
+                };
+                Ok((host, port))
+            }
+        }
+    }
+}
+
+fn lookup_host(lh: LookupHost<'_>) -> io::Result<vec::IntoIter<SocketAddr>> {
+    let addrs = crate::sys::net::lookup_host(lh)?;
     Ok(Vec::from_iter(addrs).into_iter())
 }
 
@@ -207,7 +231,7 @@ impl ToSocketAddrs for (&str, u16) {
         }
 
         // Otherwise, make the system look it up.
-        lookup_host(host, port)
+        lookup_host(LookupHost { host, port: Some(port) })
     }
 }
 
@@ -229,16 +253,8 @@ impl ToSocketAddrs for str {
             return Ok(vec![addr].into_iter());
         }
 
-        // Otherwise, split the string by ':' and convert the second part to u16...
-        let Some((host, port_str)) = self.rsplit_once(':') else {
-            return Err(io::const_error!(io::ErrorKind::InvalidInput, "invalid socket address"));
-        };
-        let Ok(port) = port_str.parse::<u16>() else {
-            return Err(io::const_error!(io::ErrorKind::InvalidInput, "invalid port value"));
-        };
-
-        // ... and make the system look up the host.
-        lookup_host(host, port)
+        // Otherwise, make the system look it up.
+        lookup_host(LookupHost { self, port: None })
     }
 }
 

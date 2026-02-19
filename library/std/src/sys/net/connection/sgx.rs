@@ -506,9 +506,25 @@ impl Iterator for LookupHost {
     }
 }
 
-pub fn lookup_host(host: &str, port: u16) -> io::Result<LookupHost> {
+pub fn lookup_host(lh: crate::net::socket_addr::LookupHost<'_>) -> io::Result<LookupHost> {
     Err(io::Error::new(
         io::ErrorKind::Uncategorized,
-        NonIpSockAddr { host: format!("{host}:{port}") },
+        NonIpSockAddr { host: match lh.port {
+            Some(port) => format!("{lh.host}:{port}"),
+            None => lh.host.into(),
+        } },
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unparseable_sockaddr() {
+        let addr = "local";
+        let error = addr.to_socket_addrs().unwrap_err();
+        let non_ip_addr = error.downcast::<NonIpSockAddr>().unwrap();
+        assert_eq!(addr, non_ip_addr);
+    }
 }
