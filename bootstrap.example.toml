@@ -61,7 +61,8 @@
 # Set this to `true` to download if CI llvm available otherwise it builds
 # from `src/llvm-project`. If you set it to `true`, it's safe and time-saving to run
 # `git submodule deinit src/llvm-project` to avoid git updating the llvm-project submodule
-# when building compiler locally.
+# when building compiler locally. However, you may still need the LLVM sources
+# for other components like `libunwind`.
 #
 #
 # Set this to `"if-unchanged"` to download only if the llvm-project has not
